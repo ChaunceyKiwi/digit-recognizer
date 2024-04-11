@@ -57,6 +57,7 @@ tf.loadLayersModel(
       rect.on(["mousedown", "touchstart"], (e) => {
         isMouseDown = true;
         renderPixels(e, i, j);
+        e.stopPropagation();
       });
 
       rect.on(["mouseup", "touchend"], () => {
@@ -67,6 +68,7 @@ tf.loadLayersModel(
         if (isMouseDown) {
           renderPixels(e, i, j);
         }
+        e.stopPropagation();
       });
 
       rectTemp.push(rect);
