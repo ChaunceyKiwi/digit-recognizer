@@ -137,13 +137,15 @@ tf.loadLayersModel(
       }
       res.push(row);
     }
-    const predictRes = (tf.argMax(model.predict(tf.tensor3d([res])), 1).arraySync())[0];
+    const modelOutput = model.predict(tf.tensor3d([res]));
+    const predictRes = (tf.argMax(modelOutput, 1).arraySync())[0];
 
-    for (let bucket of buckets) {
-      bucket.style.backgroundColor = "white";
+    const modelOutputArray = (modelOutput.arraySync())[0];
+    console.log(modelOutputArray)
+
+    for (let index in modelOutputArray) {
+      buckets[index].style.backgroundColor = `rgba(0, 255, 0, ${modelOutputArray[index]})`
     }
-    buckets[predictRes].style.backgroundColor = "yellow";
-
     return predictRes;
   }
 });
