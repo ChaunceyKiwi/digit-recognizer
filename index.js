@@ -6,8 +6,6 @@ const EMPTY_CELL_COLOR_VAL = 230;
 tf.loadLayersModel(
   "https://raw.githubusercontent.com/ChaunceyKiwi/cdn/main/model.json"
 ).then((model) => {
-  // console.log(model.summary());
-
   let draw = SVG()
     .addTo("#container")
     .size(boxSize * dim, boxSize * dim);
@@ -42,6 +40,7 @@ tf.loadLayersModel(
     renderPixel(x - 1, y);
     renderPixel(x + 1, y);
     rectsColor[x][y] = 0;
+    predict();
   };
 
   for (let i = 0; i < dim; i++) {
@@ -86,6 +85,9 @@ tf.loadLayersModel(
         rectsColor[i][j] = 255;
       }
     }
+    for (let bucket of buckets) {
+      bucket.style.backgroundColor = "white";
+    }
   };
   btn.innerText = "Clear";
   document.getElementsByTagName("body")[0].append(btn);
@@ -106,9 +108,27 @@ tf.loadLayersModel(
   btn2.innerText = "Print";
   document.getElementsByTagName("body")[0].append(btn2);
 
-  const btn3 = document.createElement("button");
-  btn3.id = "btn3";
-  btn3.onclick = () => {
+  // const btn3 = document.createElement("button");
+  // btn3.id = "btn3";
+  // btn3.onclick = () => {
+  //   console.log(predict());
+  // };
+  // btn3.innerText = "Run";
+  // document.getElementsByTagName("body")[0].append(btn3);
+
+  const buckets = [];
+  const bucketsContainer = document.createElement("div");
+  bucketsContainer.id = "bucketsContainer";
+  for (let i = 0; i < 10; i++) {
+    const bucket = document.createElement("div");
+    bucket.innerText = i;
+    bucket.className = "bucket";
+    bucketsContainer.append(bucket);
+    buckets.push(bucket);
+  }
+  document.getElementsByTagName("body")[0].append(bucketsContainer);
+
+  const predict = () => {
     let res = [];
     for (let i = 0; i < rectsColor.length; i++) {
       let row = [];
@@ -118,18 +138,12 @@ tf.loadLayersModel(
       res.push(row);
     }
     const predictRes = (tf.argMax(model.predict(tf.tensor3d([res])), 1).arraySync())[0];
-    console.log(predictRes);
-  };
-  btn3.innerText = "Run";
-  document.getElementsByTagName("body")[0].append(btn3);
 
-  const bucketsContainer = document.createElement("div");
-  bucketsContainer.id = "bucketsContainer";
-  for (let i = 0; i < 10; i++) {
-    const bucket = document.createElement("div");
-    bucket.innerText = i;
-    bucket.className = "bucket";
-    bucketsContainer.append(bucket);
+    for (let bucket of buckets) {
+      bucket.style.backgroundColor = "white";
+    }
+    buckets[predictRes].style.backgroundColor = "yellow";
+
+    return predictRes;
   }
-  document.getElementsByTagName("body")[0].append(bucketsContainer);
 });
