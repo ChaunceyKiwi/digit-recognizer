@@ -54,16 +54,16 @@ tf.loadLayersModel(
         .stroke({ color: "rgb(255, 255, 255)", width: padding })
         .move(boxSize * i, boxSize * j);
 
-      rect.mousedown((e) => {
+      rect.on(["mousedown", "touchstart"], (e) => {
         isMouseDown = true;
         renderPixels(e, i, j);
       });
 
-      rect.mouseup((e) => {
+      rect.on(["mouseup", "touchend"], () => {
         isMouseDown = false;
       });
 
-      rect.mousemove((e) => {
+      rect.on(["mousemove", "touchmove"], (e) => {
         if (isMouseDown) {
           renderPixels(e, i, j);
         }
@@ -138,14 +138,13 @@ tf.loadLayersModel(
       res.push(row);
     }
     const modelOutput = model.predict(tf.tensor3d([res]));
-    const predictRes = (tf.argMax(modelOutput, 1).arraySync())[0];
-
-    const modelOutputArray = (modelOutput.arraySync())[0];
-    console.log(modelOutputArray)
-
+    const predictRes = tf.argMax(modelOutput, 1).arraySync()[0];
+    const modelOutputArray = modelOutput.arraySync()[0];
     for (let index in modelOutputArray) {
-      buckets[index].style.backgroundColor = `rgba(0, 255, 0, ${modelOutputArray[index]})`
+      buckets[
+        index
+      ].style.backgroundColor = `rgba(0, 255, 0, ${modelOutputArray[index]})`;
     }
     return predictRes;
-  }
+  };
 });
