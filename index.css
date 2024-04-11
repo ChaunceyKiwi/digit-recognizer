@@ -1,3 +1,10 @@
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
 #container {
   cursor: crosshair;
   margin: 20px;
@@ -22,7 +29,7 @@
 .bucket {
   width: 30px;
   display: inline-block;
-  border:1px solid black;
+  border: 1px solid black;
   text-align: center;
   margin: 5px;
 }
