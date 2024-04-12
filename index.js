@@ -1,41 +1,58 @@
-const boxSize = 15;
-const padding = 2;
 const dim = 28;
+const boxSize = (document.documentElement.clientWidth - 40) / dim;
+const bucketMargin = 8;
+const bucketWidth =
+  (document.documentElement.clientWidth - 40 - 20 - bucketMargin * 20) / 10;
+const padding = boxSize / 8;
 const EMPTY_CELL_COLOR_VAL = 230;
 let isMouseDown = false;
 let model;
 const buckets = [];
 const rects = [];
-const rectsColor = [];
 
-const getColorCode = (colorVal) => {
-  return `rgb(${colorVal}, ${colorVal}, ${colorVal})`;
+const getColorCode = (colorVal, opacity) => {
+  return `rgba(${colorVal}, ${colorVal}, ${colorVal}, ${opacity})`;
 };
 
 const deepen = (color) => {
-  const originColor = parseInt(color.substring(1, 3), 16);
-  const newColor = parseInt(originColor * 1.01 ** (-originColor / 40));
-  return newColor > 0 ? newColor : 0;
+  return color * 1.01 ** (-color / 40);
 };
 
 const renderPixel = (x, y) => {
   if (x < 0 || y < 0 || x >= dim || y >= dim) {
     return;
   }
-  const color = deepen(rects[x][y].node.getAttribute("fill"));
-  const colorCode = `rgb(${color},${color},${color})`;
-  rectsColor[x][y] = color;
+
+  const color = deepen(rects[x][y].color);
+  const colorCode = getColorCode(color, 1);
   rects[x][y].attr({ fill: colorCode });
+  rects[x][y].color = color;
 };
 
-const renderPixels = (e, x, y) => {
-  e.target.setAttribute("fill", "rgb(0, 0, 0)");
-  renderPixel(x, y - 1);
-  renderPixel(x, y + 1);
-  renderPixel(x - 1, y);
-  renderPixel(x + 1, y);
-  rectsColor[x][y] = 0;
-  predict();
+const renderPixels = (e) => {
+  let target;
+  if (e.targetTouches) {
+    target = document.elementFromPoint(
+      e.targetTouches[0].clientX,
+      e.targetTouches[0].clientY
+    );
+  } else {
+    target = document.elementFromPoint(e.clientX, e.clientY);
+  }
+
+  if (target) {
+    x = target.i;
+    y = target.j;
+
+    // console.log(target.i, target.j)
+    target.setAttribute("fill", getColorCode(0, 1));
+    renderPixel(x, y - 1);
+    renderPixel(x, y + 1);
+    renderPixel(x - 1, y);
+    renderPixel(x + 1, y);
+    rects[x][y].color = 0;
+    predict();
+  }
 };
 
 const drawPixels = () => {
@@ -45,19 +62,17 @@ const drawPixels = () => {
 
   for (let i = 0; i < dim; i++) {
     let rectTemp = [];
-    let rectsColorTemp = [];
 
     for (let j = 0; j < dim; j++) {
       let rect = draw
         .rect(boxSize, boxSize)
-        .attr({ fill: getColorCode(EMPTY_CELL_COLOR_VAL) })
-        .stroke({ color: "rgb(255, 255, 255)", width: padding })
+        .attr({ fill: getColorCode(EMPTY_CELL_COLOR_VAL, 1) })
+        .stroke({ color: getColorCode(255, 1), width: padding })
         .move(boxSize * i, boxSize * j);
 
       rect.on(["mousedown", "touchstart"], (e) => {
         isMouseDown = true;
-        renderPixels(e, i, j);
-        e.stopPropagation();
+        renderPixels(e);
       });
 
       rect.on(["mouseup", "touchend"], () => {
@@ -66,16 +81,16 @@ const drawPixels = () => {
 
       rect.on(["mousemove", "touchmove"], (e) => {
         if (isMouseDown) {
-          renderPixels(e, i, j);
+          renderPixels(e);
         }
-        e.stopPropagation();
       });
 
+      rect.color = EMPTY_CELL_COLOR_VAL;
+      rect.node.i = i;
+      rect.node.j = j;
       rectTemp.push(rect);
-      rectsColorTemp.push(255);
     }
     rects.push(rectTemp);
-    rectsColor.push(rectsColorTemp);
   }
 };
 
@@ -85,8 +100,8 @@ const drawButtons = () => {
   btn.onclick = () => {
     for (let i = 0; i < rects.length; i++) {
       for (let j = 0; j < rects[0].length; j++) {
-        rects[i][j].attr({ fill: getColorCode(EMPTY_CELL_COLOR_VAL) });
-        rectsColor[i][j] = 255;
+        rects[i][j].color = EMPTY_CELL_COLOR_VAL;
+        rects[i][j].attr({ fill: getColorCode(EMPTY_CELL_COLOR_VAL, 1) });
       }
     }
     for (let bucket of buckets) {
@@ -94,23 +109,10 @@ const drawButtons = () => {
     }
   };
   btn.innerText = "Clear";
+  btn.style.width = bucketWidth * 2 + "px";
+  btn.style.height = bucketWidth + "px";
+  btn.style.fontSize = bucketWidth / 2 + "px";
   document.getElementsByTagName("body")[0].append(btn);
-
-  const btn2 = document.createElement("button");
-  btn2.id = "btn2";
-  btn2.onclick = () => {
-    let res = [];
-    for (let i = 0; i < rectsColor.length; i++) {
-      let row = [];
-      for (let j = 0; j < rectsColor[0].length; j++) {
-        row.push((255 - rectsColor[j][i]) / 255.0);
-      }
-      res.push(row);
-    }
-    console.log(JSON.stringify(res));
-  };
-  btn2.innerText = "Print";
-  document.getElementsByTagName("body")[0].append(btn2);
 };
 
 const drawBuckets = () => {
@@ -120,18 +122,24 @@ const drawBuckets = () => {
     const bucket = document.createElement("div");
     bucket.innerText = i;
     bucket.className = "bucket";
+    bucket.style.width = bucketWidth + "px";
+    bucket.style.height = bucketWidth / 2 + "px";
+    bucket.style.fontSize = bucketWidth / 2.5 + "px";
+    bucket.style.margin = bucketMargin + "px";
     bucketsContainer.append(bucket);
     buckets.push(bucket);
   }
-  document.getElementsByTagName("body")[0].append(bucketsContainer);
+  document.getElementsByTagName("body")[0].prepend(bucketsContainer);
 };
 
 const predict = () => {
   let res = [];
-  for (let i = 0; i < rectsColor.length; i++) {
+  for (let i = 0; i < rects.length; i++) {
     let row = [];
-    for (let j = 0; j < rectsColor[0].length; j++) {
-      row.push((255 - rectsColor[j][i]) / 255.0);
+    for (let j = 0; j < rects[0].length; j++) {
+      row.push(
+        (EMPTY_CELL_COLOR_VAL - rects[j][i].color) / EMPTY_CELL_COLOR_VAL
+      );
     }
     res.push(row);
   }
@@ -150,6 +158,7 @@ const predict = () => {
   model = await tf.loadLayersModel(
     "https://raw.githubusercontent.com/ChaunceyKiwi/cdn/main/model.json"
   );
-  drawPixels();
   drawBuckets();
+  drawPixels();
+  drawButtons();
 })();

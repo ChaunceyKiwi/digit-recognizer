@@ -7,30 +7,19 @@ body {
 
 #container {
   cursor: crosshair;
-  margin: 20px;
-  overflow: hidden;
+  padding: 20px;
 }
 
 #btn {
   margin-left: 20px;
 }
 
-#btn2 {
-  margin-left: 20px;
-}
-
-#btn3 {
-  margin-left: 20px;
-}
-
 #bucketsContainer {
-  margin: 20px;
+  margin: 20px 20px 0 20px;
 }
 
 .bucket {
-  width: 30px;
   display: inline-block;
   border: 1px solid black;
   text-align: center;
-  margin: 5px;
 }
