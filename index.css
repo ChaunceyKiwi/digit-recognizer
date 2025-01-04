@@ -1,25 +1,31 @@
 html,
 body {
-  margin: 0;
+  margin: 20;
   height: 100%;
-  overflow: hidden;
 }
 
 #container {
   cursor: crosshair;
-  padding: 20px;
-}
-
-#btn {
-  margin-left: 20px;
-}
-
-#bucketsContainer {
-  margin: 20px 20px 0 20px;
-}
-
-.bucket {
-  display: inline-block;
-  border: 1px solid black;
   text-align: center;
+}
+
+#visualizationContainer {
+  text-align: center;
+}
+
+.neuron {
+  fill: lightblue;
+  stroke: black;
+  stroke-width: 1px;
+}
+
+.link {
+  stroke: gray;
+  stroke-width: 1px;
+}
+
+text {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  text-anchor: middle;
 }
